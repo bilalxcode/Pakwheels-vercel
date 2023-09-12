@@ -1,9 +1,15 @@
 const express = require("express");
 const cors = require("cors"); // Import the cors middleware
 
-
 const mongoose = require("mongoose");
+
 const app = express();
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true, // This allows cookies and authentication headers to be sent
+  })
+);
 const authRoutes = require("./routes/authRoutes");
 app.use(express.json()); // Add this line to parse JSON data
 
@@ -20,7 +26,5 @@ mongoose
   .catch((error) => {
     console.error("Error connecting to MongoDB:", error);
   });
-
-app.use(cors());
 
 app.use("/auth", authRoutes);
