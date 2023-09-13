@@ -2,6 +2,69 @@ const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 const jwtKey = "wheels_pak";
 const bcrypt = require("bcryptjs");
+const nodemailer = require("nodemailer");
+
+// Create a reusable transporter object
+const transporter = nodemailer.createTransport({
+  service: "Gmail",
+  auth: {
+    user: "supremebilal78@gmail.com",
+    pass: "xlifiuqjtmrigppl",
+  },
+});
+let verificationToken; 
+
+exports.sendEmailVerification = (req, res, next) => {
+  console.log("sending email verification");
+  const email = req.body.email; 
+  const name = req.body.name;
+  const min = 100000; // Minimum 6-digit number
+  const max = 999999; // Maximum 6-digit number
+  verificationToken = Math.floor(Math.random() * (max - min + 1)) + min; 
+  const mailOptions = {
+    from: "pakwheels.com",
+    to: email, // Use the user's email here
+    subject: "Email Verification",
+    text: `Hello ${name},\n\nYour Code is:${verificationToken} `,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error("Email verification error:", error);
+      return res
+        .status(500)
+        .json({ error: "Error sending email verification" });
+    } else {
+      console.log("Email verification sent:", info.response);
+
+      next();
+    }
+  });
+};
+exports.verifyEmail = async (req, res, next) => {
+  const token = req.params.token;
+
+  try {
+    // Find the user with this token
+    const user = await User.findOne({ verificationToken: token });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid token." });
+    }
+
+    // Mark the user as verified
+    user.isVerified = true;
+    user.verificationToken = null; // Clear the token
+    await user.save();
+
+    return res.status(200).json({ message: "Email verification successful." });
+  } catch (error) {
+    console.error("Verification error:", error);
+    return res
+      .status(500)
+      .json({ message: "An error occurred during verification." });
+  }
+};
 
 exports.isNewUser = (req, res, next) => {
   const email = req.body.email; // Extract email from the request body
@@ -46,6 +109,7 @@ exports.SignUp = (req, res, next) => {
   const password = req.body.password;
 
   console.log("User registration request:", name, email, password);
+  // const verificationToken = crypto.randomBytes(20).toString("hex");
 
   bcrypt.hash(password, 10, (err, hashedPassword) => {
     if (err) {
@@ -57,11 +121,10 @@ exports.SignUp = (req, res, next) => {
       name: name,
       email: email,
       password: hashedPassword,
+      verificationToken: verificationToken,
     });
 
-    // Check if the email is already taken
 
-    // Email is not taken, proceed with user registration
     newUser
       .save()
       .then(() => {

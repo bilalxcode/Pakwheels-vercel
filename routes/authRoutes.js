@@ -9,6 +9,7 @@ router.post(
   "/sign-up",
   authController.isNewUser,
   authController.isPasswordValid,
+  authController.sendEmailVerification,
   authController.SignUp
 );
 router.post("/sign-out", authController.SignOut);
@@ -17,5 +18,5 @@ router.post(
   authController.checkEmailAndPassword,
   authController.LogIn
 );
-
+router.get("/verify/:token", authController.verifyEmail);
 module.exports = router;
