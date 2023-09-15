@@ -18,5 +18,5 @@ router.post(
   authController.checkEmailAndPassword,
   authController.LogIn
 );
-router.get("/verify/:token", authController.verifyEmail);
+router.post("/verify", authController.verifyEmail);
 module.exports = router;

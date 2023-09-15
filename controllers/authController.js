@@ -12,15 +12,15 @@ const transporter = nodemailer.createTransport({
     pass: "xlifiuqjtmrigppl",
   },
 });
-let verificationToken; 
+let verificationToken;
 
 exports.sendEmailVerification = (req, res, next) => {
   console.log("sending email verification");
-  const email = req.body.email; 
+  const email = req.body.email;
   const name = req.body.name;
   const min = 100000; // Minimum 6-digit number
   const max = 999999; // Maximum 6-digit number
-  verificationToken = Math.floor(Math.random() * (max - min + 1)) + min; 
+  verificationToken = Math.floor(Math.random() * (max - min + 1)) + min;
   const mailOptions = {
     from: "pakwheels.com",
     to: email, // Use the user's email here
@@ -42,24 +42,54 @@ exports.sendEmailVerification = (req, res, next) => {
   });
 };
 exports.verifyEmail = async (req, res, next) => {
-  const token = req.params.token;
-
+  const sixDigitToken = req.body.concatenatedValue;
+  console.log("token recieved" + sixDigitToken);
   try {
     // Find the user with this token
-    const user = await User.findOne({ verificationToken: token });
+    const user = await User.findOne({ verificationToken: sixDigitToken });
 
     if (!user) {
-      return res.status(400).json({ message: "Invalid token." });
+      console.log("invalid token");
+      return res.status(400).json({ error: "Invalid token." });
     }
 
+    console.log("user Found" + user);
     // Mark the user as verified
     user.isVerified = true;
     user.verificationToken = null; // Clear the token
-    await user.save();
+    await user
+      .save()
+      .then(() => {
+        console.log("New User added successfully with verified true");
+        const userData = {
+          name: user.name,
+          email: user.email,
+        };
 
-    return res.status(200).json({ message: "Email verification successful." });
+        // Generate a JWT token for the new user
+        jwt.sign(
+          { message: "SignUp Successful" },
+          jwtKey,
+          { expiresIn: "1h" },
+          (err, token) => {
+            if (err) {
+              return res.json({ error: "Error creating token" }); // Send a JSON response
+            } else {
+              res.json({ user: userData, jwttoken: token }); // Send a JSON response
+              console.log("token" + token, "user" + userData);
+            }
+          }
+        );
+      })
+      .catch((error) => {
+        console.error("Error adding new User:", error);
+        res.json({ error: "Error adding new User" }); // Send a JSON response
+      });
+
+    // return res.status(200).json({ message: "Email verification successful." });
   } catch (error) {
     console.error("Verification error:", error);
+    
     return res
       .status(500)
       .json({ message: "An error occurred during verification." });
@@ -124,29 +154,32 @@ exports.SignUp = (req, res, next) => {
       verificationToken: verificationToken,
     });
 
-
     newUser
       .save()
       .then(() => {
-        console.log("New User added successfully");
-        const userData = {
-          name: newUser.name,
-          email: newUser.email,
-        };
+        console.log("New User added successfully with verified false");
+        return res
+          .status(200)
+          .json({ message: "User signup without verified false" });
 
-        // Generate a JWT token for the new user
-        jwt.sign(
-          { message: "SignUp Successful" },
-          jwtKey,
-          { expiresIn: "1h" },
-          (err, token) => {
-            if (err) {
-              return res.json({ error: "Error creating token" }); // Send a JSON response
-            } else {
-              res.json({ user: userData, token: token }); // Send a JSON response
-            }
-          }
-        );
+        // const userData = {
+        //   name: newUser.name,
+        //   email: newUser.email,
+        // };
+
+        // // Generate a JWT token for the new user
+        // jwt.sign(
+        //   { message: "SignUp Successful" },
+        //   jwtKey,
+        //   { expiresIn: "1h" },
+        //   (err, token) => {
+        //     if (err) {
+        //       return res.json({ error: "Error creating token" }); // Send a JSON response
+        //     } else {
+        //       res.json({ user: userData, token: token }); // Send a JSON response
+        //     }
+        //   }
+        // );
       })
       .catch((error) => {
         console.error("Error adding new User:", error);

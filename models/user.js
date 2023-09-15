@@ -10,6 +10,14 @@ const userSchema = new mongoose.Schema(
       default: false, // Initially, users are not verified
     },
     verificationToken: String,
+    phoneNumber: {
+      type: String,
+      default: null,
+    },
+    city: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,
