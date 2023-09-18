@@ -10,12 +10,15 @@ app.use(
     credentials: true, // This allows cookies and authentication headers to be sent
   })
 );
+
 const authRoutes = require("./routes/authRoutes");
+const profileRoutes = require("./routes/profileRoutes");
+
 app.use(express.json()); // Add this line to parse JSON data
 
 mongoose
   .connect(
-    "mongodb+srv://supremebilal78:t5OxJKSK26h9q9YU@test-db.v6p1fbj.mongodb.net/Pakwheels", // Replace 'your-database-name' with your actual database name
+    "mongodb+srv://supremebilal78:t5OxJKSK26h9q9YU@test-db.v6p1fbj.mongodb.net/Pakwheels",
     { useNewUrlParser: true, useUnifiedTopology: true }
   )
   .then(() => {
@@ -28,3 +31,4 @@ mongoose
   });
 
 app.use("/auth", authRoutes);
+app.use("/profile", profileRoutes);

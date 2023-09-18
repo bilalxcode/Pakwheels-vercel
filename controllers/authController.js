@@ -61,10 +61,11 @@ exports.verifyEmail = async (req, res, next) => {
       .save()
       .then(() => {
         console.log("New User added successfully with verified true");
-        const userData = {
-          name: user.name,
-          email: user.email,
-        };
+        // const userData = {
+        //   _id: user._id,
+        //   name: user.name,
+        //   email: user.email,
+        // };
 
         // Generate a JWT token for the new user
         jwt.sign(
@@ -75,8 +76,8 @@ exports.verifyEmail = async (req, res, next) => {
             if (err) {
               return res.json({ error: "Error creating token" }); // Send a JSON response
             } else {
-              res.json({ user: userData, jwttoken: token }); // Send a JSON response
-              console.log("token" + token, "user" + userData);
+              res.json({ user: user, jwttoken: token }); // Send a JSON response
+              console.log("token" + token, "user" + user);
             }
           }
         );
@@ -89,7 +90,7 @@ exports.verifyEmail = async (req, res, next) => {
     // return res.status(200).json({ message: "Email verification successful." });
   } catch (error) {
     console.error("Verification error:", error);
-    
+
     return res
       .status(500)
       .json({ message: "An error occurred during verification." });
@@ -284,16 +285,31 @@ exports.LogIn = (req, res) => {
   console.log("in req");
 
   // Generate a JWT token and send it as a response
-  jwt.sign(
-    { message: "Login Successful" },
-    jwtKey,
-    { expiresIn: "1h" },
-    (err, token) => {
-      if (err) {
-        return res.status(500).json({ error: "Error creating token" });
-      } else {
-        res.status(200).json({ user: user, token: token });
-      }
+  jwt.sign({ user: user }, jwtKey, { expiresIn: "1h" }, (err, token) => {
+    if (err) {
+      return res.status(500).json({ error: "Error creating token" });
+    } else {
+      res.status(200).json({ user: user, token: token });
     }
-  );
+  });
+};
+
+exports.getUser = (req, res, next) => {
+  const userId = req.body.userId;
+
+  User.findById(userId)
+    .then((user) => {
+      if (!user) {
+        // If the user with the specified ID is not found, send a 404 response
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // If the user is found, send the user object as a response
+      res.status(200).json(user);
+    })
+    .catch((error) => {
+      // Handle any errors that occur during the database query
+      console.error("Error retrieving user:", error);
+      res.status(500).json({ error: "Error retrieving user" });
+    });
 };
