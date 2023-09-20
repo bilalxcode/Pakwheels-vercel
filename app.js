@@ -13,7 +13,7 @@ app.use(
 
 const authRoutes = require("./routes/authRoutes");
 const profileRoutes = require("./routes/profileRoutes");
-
+const adRoutes = require("./routes/adRoutes");
 app.use(express.json()); // Add this line to parse JSON data
 
 mongoose
@@ -32,3 +32,4 @@ mongoose
 
 app.use("/auth", authRoutes);
 app.use("/profile", profileRoutes);
+app.use("/ad", adRoutes);
