@@ -5,6 +5,6 @@ router.use(express.json());
 const adController = require("../controllers/adController");
 
 router.post("/post-car-ad", adController.postCarAd);
-router.post("/car-image", adController.addCarImage);
+router.post("/car-images", adController.addCarImage);
 
 module.exports = router;

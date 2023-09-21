@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors"); // Import the cors middleware
+const bodyParser = require("body-parser");
 
 const mongoose = require("mongoose");
 
@@ -10,7 +11,8 @@ app.use(
     credentials: true, // This allows cookies and authentication headers to be sent
   })
 );
-
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 const authRoutes = require("./routes/authRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const adRoutes = require("./routes/adRoutes");

@@ -280,7 +280,6 @@ exports.checkEmailAndPassword = (req, res, next) => {
 };
 
 exports.LogIn = (req, res) => {
-  // The user object should be attached to the request from the previous middleware
   const user = req.user;
   console.log("in req");
 
