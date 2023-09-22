@@ -84,7 +84,6 @@ exports.addCarImage = async (req, res, next) => {
           return res.status(404).json({ error: "Car not found" });
         }
 
-        
         console.log("Updated Car:", updatedCar);
         return res.status(200).json({ message: "Image Uploaded Successfully" });
       } catch (updateError) {
@@ -95,5 +94,54 @@ exports.addCarImage = async (req, res, next) => {
   } catch (error) {
     console.error("Error handling image upload:", error);
     res.status(500).json({ error: "Error handling image upload" });
+  }
+};
+exports.addCarContact = async (req, res, next) => {
+  try {
+    const phoneNumber = req.body.phoneNumber;
+    const car = req.body.car;
+    const carId = car._id;
+
+    console.log("phone:", phoneNumber);
+    console.log("carId:", carId);
+
+    // Find the car by its ID
+    const carToUpdate = await Car.findById(carId);
+
+    if (!carToUpdate) {
+      return res.status(404).json({ message: "Car not found" });
+    }
+
+    // Update the sellerContact field
+    carToUpdate.sellerContact = phoneNumber;
+
+    // Save the updated car object
+    await carToUpdate.save();
+
+    res.status(200).json({ message: "Contact updated successfully" });
+  } catch (error) {
+    console.error("Error updating contact:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.getAllAds = async (req, res, next) => {
+  try {
+    const user = req.body.user;
+    const userId = user._id; // Assuming you receive the user's ID in the request body
+    const userFound = await User.findById(userId);
+
+    if (!userFound) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Query the database to find ads posted by this user
+    const ads = await Car.find({ seller: userId });
+    console.log(ads);
+
+    res.status(200).json({ message: "success", ads });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
