@@ -53,7 +53,7 @@ const carSchema = new mongoose.Schema(
     ],
     isApproved: {
       type: Boolean,
-      default: false,
+      default: null,
     },
     sellerContact: {
       type: String,

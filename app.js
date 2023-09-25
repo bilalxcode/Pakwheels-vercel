@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors"); // Import the cors middleware
 const bodyParser = require("body-parser");
-const path = require('path');
+const path = require("path");
 
 const mongoose = require("mongoose");
 
@@ -17,8 +17,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const authRoutes = require("./routes/authRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const adRoutes = require("./routes/adRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 app.use(express.json()); // Add this line to parse JSON data
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 mongoose
   .connect(
@@ -37,3 +38,4 @@ mongoose
 app.use("/auth", authRoutes);
 app.use("/profile", profileRoutes);
 app.use("/ad", adRoutes);
+app.use("/admin", adminRoutes);
