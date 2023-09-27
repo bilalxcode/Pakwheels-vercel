@@ -2,7 +2,6 @@ const User = require("../models/user");
 const Car = require("../models/car");
 const multer = require("multer");
 
-// const upload = multer({ dest: "uploads/" });
 
 exports.postCarAd = (req, res, next) => {
   const formData = req.body.formData;
@@ -145,3 +144,7 @@ exports.getAllAds = async (req, res, next) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+exports.getEveryAd=(res,req,next)=>{
+
+}

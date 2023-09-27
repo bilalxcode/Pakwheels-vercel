@@ -9,7 +9,7 @@ const app = express();
 app.use(
   cors({
     origin: "http://localhost:3000",
-    credentials: true, // This allows cookies and authentication headers to be sent
+    credentials: true, 
   })
 );
 app.use(bodyParser.json());
