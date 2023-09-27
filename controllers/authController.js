@@ -250,7 +250,10 @@ exports.checkEmailAndPassword = (req, res, next) => {
         console.log("Email not found");
         return res.status(400).json({ error: "Email not found" });
       }
-
+      if (user.isBanned) {
+        console.log("User is banned");
+        return res.status(400).json({ error: "User is banned" });
+      }
       // Compare the provided password with the hashed password stored in the database
       bcrypt.compare(password, user.password, (err, result) => {
         if (err) {

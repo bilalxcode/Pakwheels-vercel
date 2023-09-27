@@ -26,6 +26,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "regular",
     },
+    isBanned: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
