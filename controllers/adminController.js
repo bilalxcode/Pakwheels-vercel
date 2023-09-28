@@ -2,6 +2,10 @@ const User = require("../models/user");
 const Car = require("../models/car");
 const Product = require("../models/product");
 const Category = require("../models/category");
+
+const Video = require("../models/videos");
+const multer = require("multer");
+
 exports.adminLogin = (req, res, next) => {
   const email = req.body.email;
   const pass = req.body.pass;
@@ -139,9 +143,20 @@ exports.DeleteAd = async (req, res, next) => {
 
 exports.getCategory = async (req, res, next) => {
   try {
+    console.log("category sent");
     const categories = await Category.find();
 
     res.status(200).json({ categories });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+exports.getProducts = async (req, res, next) => {
+  try {
+    const products = await Product.find();
+    res.status(200).json({ products });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -165,45 +180,189 @@ exports.AddNewCategory = async (req, res, next) => {
   }
 };
 
-const multer = require("multer");
+// const multer = require("multer");
+
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, "uploads/"); // Specify the directory where uploaded files will be stored
+//   },
+//   filename: (req, file, cb) => {
+//     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+//     cb(
+//       null,
+//       file.fieldname +
+//         "-" +
+//         uniqueSuffix +
+//         "." +
+//         file.originalname.split(".").pop()
+//     );
+//   },
+// });
+
+// const upload = multer({ storage: storage });
+
+// exports.AdProduct = async (req, res, next) => {
+//   try {
+//     const { title, category, price, quantity, description } = req.body;
+
+//     if (!req.files) {
+//       return res.status(400).json({ message: "No files uploaded" });
+//     }
+
+//     const images = req.files.map((file) => file.path);
+
+//     // Create a new product instance
+//     const newProduct = new Product({
+//       title,
+//       category,
+//       price,
+//       quantity,
+//       description,
+//       images,
+//     });
+
+//     // Save the new product to the database
+//     await newProduct.save();
+
+//     res.status(200).json({ message: "Product added successfully" });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Internal Server Error" });
+//   }
+// };
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Specify the directory where uploaded files will be stored
+  destination: function (req, file, cb) {
+    cb(null, "./uploads");
   },
-  filename: (req, file, cb) => {
+  filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(
-      null,
-      file.fieldname +
-        "-" +
-        uniqueSuffix +
-        "." +
-        file.originalname.split(".").pop()
-    );
+    cb(null, uniqueSuffix + "-" + file.originalname);
   },
 });
 
 const upload = multer({ storage: storage });
-
-exports.AdProduct = async (req, res, next) => {
+exports.addProduct = async (req, res, next) => {
   try {
-    const { title, category, price, quantity, description, images } = req.body;
+    upload.array("images[]", 5)(req, res, async (err) => {
+      if (err) {
+        console.error("Error uploading images:", err);
+        return res.status(500).json({ error: "Error uploading images" });
+      }
 
-    // Create a new product instance
-    const newProduct = new Product({
-      title,
-      category,
-      price,
-      quantity,
-      description,
-      images,
+      console.log("Images uploaded successfully");
+
+      try {
+        const { title, category, price, quantity, description } = req.body;
+
+        if (!req.files || req.files.length === 0) {
+          return res.status(400).json({ message: "No files uploaded" });
+        }
+
+        const images = req.files.map((file) => file.path);
+
+        // Find the category ObjectId by name
+        const foundCategory = await Category.findOne({ name: category });
+
+        if (!foundCategory) {
+          return res.status(404).json({ message: "Category not found" });
+        }
+
+        const newProduct = new Product({
+          name: title,
+          category: foundCategory._id, // Use the ObjectId of the found category
+          price,
+          quantity,
+          description,
+          images,
+        });
+
+        await newProduct.save();
+
+        res.status(200).json({ message: "Product added successfully" });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal Server Error" });
+      }
+    });
+  } catch (error) {
+    console.error("Error handling image upload:", error);
+    res.status(500).json({ error: "Error handling image upload" });
+  }
+};
+
+exports.editProduct = async (req, res, next) => {
+  const productId = req.body.productId; // Get the product ID from the request body
+  console.log(productId);
+  try {
+    // Find the product by ID
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Update the product fields with values from the request body
+    product.name = req.body.name;
+    product.price = req.body.price;
+    product.quantity = req.body.quantity;
+    product.description = req.body.description;
+
+    // Save the updated product
+    const updatedProduct = await product.save();
+
+    console.log("product updated ");
+    res.status(200).json({
+      message: "Product updated successfully",
+      product: updatedProduct,
+    });
+  } catch (error) {
+    console.error("Edit product error: " + error);
+    res
+      .status(500)
+      .json({ message: "Failed to edit product", error: error.toString() });
+  }
+};
+
+exports.deleteProduct = async (req, res, next) => {
+  const productId = req.body.productId;
+
+  try {
+    // Find the car document by carId and remove it from the database
+    const deletedProduct = await Product.findByIdAndRemove(productId);
+
+    if (!deletedProduct) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    return res.status(200).json({ message: "Product deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    return res.status(500).json({ message: "Failed to delete product" });
+  }
+};
+
+exports.AddVideo = async (req, res, next) => {
+  try {
+    const link = req.body.videoUrl;
+
+    const newVideo = new Video({
+      link: link,
     });
 
-    // Save the new product to the database
-    await newProduct.save();
+    await newVideo.save();
 
-    res.status(200).json({ message: "Product added successfully" });
+    res.status(200).json({ message: "Video added successfully" });
+    console.log("Video uploaded successfully");
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+exports.getVideo = async (req, res, next) => {
+  try {
+    const videos = await Video.find();
+    res.status(200).json({ videos });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
