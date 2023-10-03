@@ -2,15 +2,27 @@ const User = require("../models/user");
 const Car = require("../models/car");
 const Product = require("../models/product");
 const Category = require("../models/category");
+const jwt = require("jsonwebtoken");
 
+const jwtKey = "wheels_pak";
 const Video = require("../models/videos");
 const multer = require("multer");
 
 exports.adminLogin = (req, res, next) => {
   const email = req.body.email;
-  const pass = req.body.pass;
+  const password = req.body.password;
 
-  res.status(200).json({ message: "success" });
+  const payload = {
+    email: email,
+  };
+
+  jwt.sign(payload, jwtKey, { expiresIn: "1h" }, (err, token) => {
+    if (err) {
+      return res.status(500).json({ error: "Error creating token" });
+    } else {
+      res.status(200).json({ token: token });
+    }
+  });
 };
 
 exports.getEveryAd = async (req, res, next) => {
@@ -342,12 +354,30 @@ exports.deleteProduct = async (req, res, next) => {
   }
 };
 
+// exports.AddVideo = async (req, res, next) => {
+//   try {
+//     const link = req.body.videoUrl;
+
+//     const newVideo = new Video({
+//       link: link,
+//     });
+
+//     await newVideo.save();
+
+//     res.status(200).json({ message: "Video added successfully" });
+//     console.log("Video uploaded successfully");
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Internal Server Error" });
+//   }
+// };
 exports.AddVideo = async (req, res, next) => {
   try {
-    const link = req.body.videoUrl;
+    const fullURL = req.body.videoUrl;
+    const videoID = fullURL.split("v=")[1]; // Extract the video ID
 
     const newVideo = new Video({
-      link: link,
+      link: videoID, // Store the video ID instead of the full URL
     });
 
     await newVideo.save();
@@ -359,10 +389,30 @@ exports.AddVideo = async (req, res, next) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 exports.getVideo = async (req, res, next) => {
   try {
     const videos = await Video.find();
     res.status(200).json({ videos });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+exports.DeleteVideo = async (req, res, next) => {
+  try {
+    const videoId = req.body.videoId;
+    console.log(videoId);
+
+    const result = await Video.deleteOne({ _id: videoId });
+
+    if (result.deletedCount === 1) {
+      res.status(200).json({ message: "Video deleted successfully" });
+      console.log("Video deleted successfully");
+    } else {
+      res.status(404).json({ message: "Video not found" });
+      console.log("Video not found");
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });

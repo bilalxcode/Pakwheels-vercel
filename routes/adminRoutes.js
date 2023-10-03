@@ -18,7 +18,6 @@ router.post("/editProduct", adminController.editProduct);
 router.post("/deleteProduct", adminController.deleteProduct);
 router.post("/adVideo", adminController.AddVideo);
 router.get("/getVideo", adminController.getVideo);
-
-
+router.post("/DeleteVideo", adminController.DeleteVideo);
 
 module.exports = router;
