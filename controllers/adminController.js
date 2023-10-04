@@ -1,5 +1,7 @@
 const User = require("../models/user");
 const Car = require("../models/car");
+const Bike = require("../models/bike");
+
 const Product = require("../models/product");
 const Category = require("../models/category");
 const jwt = require("jsonwebtoken");
@@ -29,8 +31,9 @@ exports.getEveryAd = async (req, res, next) => {
   try {
     const cars = await Car.find();
     const users = await User.find();
+    const bikes = await Bike.find();
 
-    res.status(200).json({ cars, users });
+    res.status(200).json({ cars, users, bikes });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -112,6 +115,30 @@ exports.ApproveAd = async (req, res, next) => {
   }
 };
 
+exports.ApproveBikeAd = async (req, res, next) => {
+  try {
+    const bikeId = req.body.bikeId;
+
+    // Find the car by ID and update the isApproved property to true
+    const updatedBike = await Bike.findByIdAndUpdate(
+      bikeId,
+      { isApproved: true },
+      { new: true }
+    );
+
+    if (!updatedBike) {
+      return res.status(404).json({ message: "Bike not found" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Bike approved successfully", bike: updatedBike });
+  } catch (error) {
+    console.error("Error approving bike:", error);
+    res.status(500).json({ message: "Error approving bike" });
+  }
+};
+
 exports.DisApproveAd = async (req, res, next) => {
   try {
     const carId = req.body.carId;
@@ -135,6 +162,29 @@ exports.DisApproveAd = async (req, res, next) => {
   }
 };
 
+exports.DisApproveBikeAd = async (req, res, next) => {
+  try {
+    const bikeId = req.body.bikeId;
+
+    const updatedBike = await Bike.findByIdAndUpdate(
+      bikeId,
+      { isApproved: false },
+      { new: true }
+    );
+
+    if (!updatedBike) {
+      return res.status(404).json({ message: "Bike not found" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Bike Disapproved successfully", bike: updatedBike });
+  } catch (error) {
+    console.error("Error Disapproving Bike:", error);
+    res.status(500).json({ message: "Error Disapproving Bike" });
+  }
+};
+
 exports.DeleteAd = async (req, res, next) => {
   const carId = req.body.carId;
 
@@ -150,6 +200,24 @@ exports.DeleteAd = async (req, res, next) => {
   } catch (error) {
     console.error("Error deleting car:", error);
     return res.status(500).json({ message: "Failed to delete car" });
+  }
+};
+
+exports.DeleteBikeAd = async (req, res, next) => {
+  const bikeId = req.body.bikeId;
+
+  try {
+    // Find the car document by carId and remove it from the database
+    const deletedBike = await Bike.findByIdAndRemove(bikeId);
+
+    if (!deletedBike) {
+      return res.status(404).json({ message: "Bike not found" });
+    }
+
+    return res.status(200).json({ message: "Bike deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting bike:", error);
+    return res.status(500).json({ message: "Failed to delete bike" });
   }
 };
 

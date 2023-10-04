@@ -8,8 +8,14 @@ router.get("/getEveryAd", adminController.getEveryAd);
 router.post("/BanUser", adminController.BanUser);
 router.post("/UnBanUser", adminController.UnBanUser);
 router.post("/approveAd", adminController.ApproveAd);
+router.post("/approveBikeAd", adminController.ApproveBikeAd);
+
 router.post("/deleteAd", adminController.DeleteAd);
+router.post("/deleteBikeAd", adminController.DeleteBikeAd);
+
 router.post("/DisApproveAd", adminController.DisApproveAd);
+router.post("/DisApproveBikeAd", adminController.DisApproveBikeAd);
+
 router.post("/addProduct", adminController.addProduct);
 router.get("/getCategory", adminController.getCategory);
 router.post("/AddNewCategory", adminController.AddNewCategory);

@@ -1,7 +1,8 @@
 const User = require("../models/user");
 const Car = require("../models/car");
-const multer = require("multer");
+const Bike = require("../models/bike");
 
+const multer = require("multer");
 
 exports.postCarAd = (req, res, next) => {
   const formData = req.body.formData;
@@ -124,6 +125,114 @@ exports.addCarContact = async (req, res, next) => {
   }
 };
 
+exports.postBikeAd = (req, res, next) => {
+  const formData = req.body.formData;
+  const selectedFeatures = req.body.selectedFeatures;
+  const userId = req.body.userId;
+  const newBike = new Bike({
+    city: formData.city,
+    modelName: formData.modelName,
+    registeredIn: formData.registeredIn,
+    color: formData.color,
+    mileage: formData.mileage,
+    price: formData.price,
+    description: formData.description,
+    engineType: formData.engineType,
+    engineCapacity: formData.engineCapacity,
+    assembly: formData.assembly,
+    features: selectedFeatures,
+    seller: userId,
+  });
+
+  newBike
+    .save()
+    .then((bike) => {
+      console.log("New Bike added successfully without approval ");
+      return res.status(200).json({
+        message: "New Bike added successfully without approval",
+        bike: bike,
+      });
+    })
+    .catch((error) => {
+      console.error("Error adding new bike:", error);
+      res.json({ error: "Error adding new bike" });
+    });
+};
+
+exports.addBikeImage = async (req, res, next) => {
+  try {
+    upload.array("images[]", 5)(req, res, async (err) => {
+      if (err) {
+        console.error("Error uploading images:", err);
+        return res.status(500).json({ error: "Error uploading images" });
+      }
+
+      console.log("Images uploaded successfully");
+
+      // Extract car data from the formData
+      const bike = JSON.parse(req.body.bike);
+      const bikeId = bike._id; // Assuming the car object has an _id field
+      console.log("Car ID:", bikeId);
+
+      // Get an array of image URLs or references from req.files
+      const imageUrls = req.files.map((file) => file.path);
+      console.log("Image URLs:", imageUrls);
+
+      // Update the car document with the new image URLs
+      try {
+        const updatedBike = await Bike.findByIdAndUpdate(
+          bikeId,
+          { $push: { images: imageUrls } },
+          { new: true }
+        );
+
+        if (!updatedBike) {
+          console.log("Image not added to the bike");
+          return res.status(404).json({ error: "bike not found" });
+        }
+
+        console.log("Updated bike:", updatedBike);
+        return res.status(200).json({ message: "Image Uploaded Successfully" });
+      } catch (updateError) {
+        console.error("Error updating bike:", updateError);
+        return res.status(500).json({ error: "Error updating bike" });
+      }
+    });
+  } catch (error) {
+    console.error("Error handling image upload:", error);
+    res.status(500).json({ error: "Error handling image upload" });
+  }
+};
+
+exports.addBikeContact = async (req, res, next) => {
+  try {
+    const phoneNumber = req.body.phoneNumber;
+    const bike = req.body.bike;
+    const bikeId = bike._id;
+
+    console.log("phone:", phoneNumber);
+    console.log("bikeId:", bikeId);
+
+    // Find the car by its ID
+    const bikeToUpdate = await Bike.findById(bikeId);
+
+    if (!bikeToUpdate) {
+      return res.status(404).json({ message: "Bike not found" });
+    }
+
+    // Update the sellerContact field
+    bikeToUpdate.sellerContact = phoneNumber;
+
+    // Save the updated car object
+    await bikeToUpdate.save();
+
+    res.status(200).json({ message: "Bike Contact updated successfully" });
+  } catch (error) {
+    console.error("Error updating contact:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 exports.getAllAds = async (req, res, next) => {
   try {
     const user = req.body.user;
@@ -136,15 +245,15 @@ exports.getAllAds = async (req, res, next) => {
 
     // Query the database to find ads posted by this user
     const ads = await Car.find({ seller: userId });
+    const bikeAds = await Bike.find({ seller: userId });
+
     console.log(ads);
 
-    res.status(200).json({ message: "success", ads });
+    res.status(200).json({ message: "success", ads, bikeAds });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-exports.getEveryAd=(res,req,next)=>{
-
-}
+exports.getEveryAd = (res, req, next) => {};
