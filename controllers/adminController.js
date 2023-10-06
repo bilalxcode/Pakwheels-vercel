@@ -486,3 +486,33 @@ exports.DeleteVideo = async (req, res, next) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+exports.stripeCheckout = async (req, res, next) => {
+  try {
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: 1000,
+      currency: "PKR",
+    });
+
+    res.json({ clientSecret: paymentIntent.client_secret });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to create payment intent" });
+  }
+};
+
+exports.getPublishableKey = async (req, res, next) => {
+  try {
+    // Fetch the Stripe publishable key from your environment variables or configuration
+    const stripePublishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
+
+    if (!stripePublishableKey) {
+      throw new Error("Stripe publishable key not found");
+    }
+
+    res.json({ publishableKey: stripePublishableKey });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to get publishable key" });
+  }
+};
