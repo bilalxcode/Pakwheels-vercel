@@ -315,3 +315,58 @@ exports.getUser = (req, res, next) => {
       res.status(500).json({ error: "Error retrieving user" });
     });
 };
+
+exports.saveGoogleUser = (req, res) => {
+  const userEmail = req.body.userEmail;
+  const userName = req.body.userName;
+  console.log("userEmail, userName");
+
+  console.log(userEmail, userName);
+  User.findOne({ email: userEmail }).then((user) => {
+    if (user) {
+      // return res.status(400).json({ user: user }); // Use an appropriate HTTP status code, like 400 Bad Request
+      jwt.sign({ user: user }, jwtKey, { expiresIn: "1h" }, (err, token) => {
+        if (err) {
+          return res.status(500).json({ error: "Error creating token" });
+        } else {
+          res.status(200).json({ user: user, token: token });
+        }
+      });
+    } else {
+      const newUser = new User({
+        name: userName,
+        email: userEmail,
+        isVerified: true,
+      });
+      newUser
+        .save()
+        .then(() => {
+          console.log("new google user created");
+          User.findOne({ email: userEmail }).then((user) => {
+            if (user) {
+              // return res.status(400).json({ user: user }); // Use an appropriate HTTP status code, like 400 Bad Request
+              jwt.sign(
+                { user: user },
+                jwtKey,
+                { expiresIn: "1h" },
+                (err, token) => {
+                  if (err) {
+                    return res
+                      .status(500)
+                      .json({ error: "Error creating token" });
+                  } else {
+                    res.status(200).json({ user: user, token: token });
+                    console.log(user, token);
+                  }
+                }
+              );
+            }
+          });
+        })
+        .catch((error) => {
+          console.error("Error adding new User:", error);
+          res.json({ error: "Error adding new User" }); // Send a JSON response
+        });
+    }
+  });
+};

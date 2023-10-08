@@ -20,6 +20,8 @@ router.post(
 );
 router.post("/verify", authController.verifyEmail);
 router.post("/getUser", authController.getUser);
+router.post("/saveGoogleUser", authController.saveGoogleUser);
+
 
 // router.post("/verifyToken", authController.verifyToken);
 
