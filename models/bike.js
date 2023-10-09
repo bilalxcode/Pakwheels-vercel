@@ -6,6 +6,10 @@ const bikeSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    modelYear: {
+      type: String,
+      default: null,
+    },
     modelName: {
       type: String,
       default: null,
@@ -23,7 +27,7 @@ const bikeSchema = new mongoose.Schema(
       default: null,
     },
     price: {
-      type: String,
+      type: Number,
       default: null,
     },
     description: {

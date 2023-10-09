@@ -324,6 +324,12 @@ exports.saveGoogleUser = (req, res) => {
   console.log(userEmail, userName);
   User.findOne({ email: userEmail }).then((user) => {
     if (user) {
+      if (user.isBanned) {
+        console.log("User is banned");
+        return res
+          .status(401)
+          .json({ error: "User is banned", message: "You are banned" });
+      }
       // return res.status(400).json({ user: user }); // Use an appropriate HTTP status code, like 400 Bad Request
       jwt.sign({ user: user }, jwtKey, { expiresIn: "1h" }, (err, token) => {
         if (err) {

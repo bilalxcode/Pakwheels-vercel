@@ -1,7 +1,7 @@
 const User = require("../models/user");
 const Car = require("../models/car");
 const Bike = require("../models/bike");
-
+const Order = require("../models/order");
 const Product = require("../models/product");
 const Category = require("../models/category");
 const jwt = require("jsonwebtoken");
@@ -487,32 +487,42 @@ exports.DeleteVideo = async (req, res, next) => {
   }
 };
 
-exports.stripeCheckout = async (req, res, next) => {
+exports.userCODOrder = async (req, res, next) => {
   try {
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: 1000,
-      currency: "PKR",
+    // Extract order details from the request
+    const { user, products, address, phoneNumber } = req.body;
+
+    // Create a new order document
+    const newOrder = new Order({
+      user: user,
+      products: products, // Use the "products" field
+      address: address,
+      phoneNumber: phoneNumber,
     });
 
-    res.json({ clientSecret: paymentIntent.client_secret });
+    // Save the order to the database
+    const savedOrder = await newOrder.save();
+
+    // Return a success response
+    res
+      .status(201)
+      .json({ message: "Order placed successfully", order: savedOrder });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to create payment intent" });
+    // Handle errors and return an error response
+    console.error("Error placing COD order:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
-exports.getPublishableKey = async (req, res, next) => {
+exports.getAllOrders = async (req, res, next) => {
   try {
-    // Fetch the Stripe publishable key from your environment variables or configuration
-    const stripePublishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
+    const { userId } = req.body;
 
-    if (!stripePublishableKey) {
-      throw new Error("Stripe publishable key not found");
-    }
+    const orders = await Order.find({ user: userId }).populate("products");
 
-    res.json({ publishableKey: stripePublishableKey });
+    res.status(200).json({ orders });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to get publishable key" });
+    console.error("Error fetching orders:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };

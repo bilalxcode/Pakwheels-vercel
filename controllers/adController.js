@@ -12,6 +12,7 @@ exports.postCarAd = (req, res, next) => {
   console.log(userId);
   const newCar = new Car({
     city: formData.city,
+    modelYear: formData.modelYear,
     modelName: formData.modelName,
     registeredIn: formData.registeredIn,
     color: formData.color,
@@ -139,7 +140,7 @@ exports.postBikeAd = (req, res, next) => {
     description: formData.description,
     engineType: formData.engineType,
     engineCapacity: formData.engineCapacity,
-    assembly: formData.assembly,
+    modelYear: formData.modelYear,
     features: selectedFeatures,
     seller: userId,
   });

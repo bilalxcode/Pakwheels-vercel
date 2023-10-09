@@ -25,9 +25,7 @@ router.post("/deleteProduct", adminController.deleteProduct);
 router.post("/adVideo", adminController.AddVideo);
 router.get("/getVideo", adminController.getVideo);
 router.post("/DeleteVideo", adminController.DeleteVideo);
-router.post("/stripeCheckout", adminController.stripeCheckout);
-router.post("/getPublishableKey", adminController.getPublishableKey);
-
-
+router.post("/userCODOrder", adminController.userCODOrder);
+router.post("/getAllOrders", adminController.getAllOrders);
 
 module.exports = router;
