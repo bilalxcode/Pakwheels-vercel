@@ -526,3 +526,34 @@ exports.getAllOrders = async (req, res, next) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+exports.getOrders = async (req, res, next) => {
+  try {
+    const orders = await Order.find();
+    const products = await Product.find();
+    res.status(200).json({ orders, products });
+  } catch (error) {
+    console.error("Error getting ads:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+exports.dispatchOrder = async (req, res, next) => {
+  const orderId = req.body.orderId; // Assuming you send the order ID in the request body
+  try {
+    // Find the order by ID and update the isDispatched property
+    const updatedOrder = await Order.findByIdAndUpdate(
+      orderId,
+      { isDispatched: true },
+      { new: true } // This option returns the updated document
+    );
+
+    if (!updatedOrder) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res.status(200).json({ message: "Order Dispatched", order: updatedOrder });
+  } catch (error) {
+    console.error("Error dispatching order:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

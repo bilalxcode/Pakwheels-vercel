@@ -376,3 +376,112 @@ exports.saveGoogleUser = (req, res) => {
     }
   });
 };
+
+// Generate a 6-digit verification code
+function generateVerificationCode() {
+  const min = 100000; // Minimum 6-digit number
+  const max = 999999; // Maximum 6-digit number
+  return (Math.floor(Math.random() * (max - min + 1)) + min).toString();
+}
+
+exports.resetPassword = async (req, res, next) => {
+  const userEmail = req.body.email;
+
+  try {
+    // Find the user with the provided email
+    const user = await User.findOne({ email: userEmail });
+
+    if (!user) {
+      // User not found
+      console.log("user not found");
+
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Generate a 6-digit verification code
+    console.log("user found", userEmail);
+
+    const verificationCode = generateVerificationCode();
+
+    // Update the user's verificationToken with the generated code
+    user.verificationToken = verificationCode;
+    await user.save();
+
+    // Send the verification code via email
+    const mailOptions = {
+      from: "pakwheels.com",
+      to: userEmail,
+      subject: "Reset Password Verification",
+      text: `Your verification code to reset your password is: ${verificationCode}`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Email sending error:", error);
+        return res
+          .status(500)
+          .json({ error: "Error sending verification email" });
+      } else {
+        console.log("Verification email sent:", info.response);
+        res
+          .status(200)
+          .json({ message: "Verification email sent successfully" });
+      }
+    });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json({ error: "Error resetting password" });
+  }
+};
+// Import necessary modules and models
+
+exports.validateResetPassword = async (req, res, next) => {
+  const { email, verificationCode } = req.body;
+  console.log("working");
+
+  try {
+    // Find the user with the provided email
+    const user = await User.findOne({ email });
+
+    if (!user || user.verificationToken !== verificationCode) {
+      // Invalid email or verification code
+      return res
+        .status(400)
+        .json({ error: "Invalid email or verification code" });
+    }
+
+    // Verification successful
+    return res.status(200).json({ message: "Verification successful" });
+  } catch (error) {
+    console.error("Error validating reset password:", error);
+    return res.status(500).json({ error: "Error validating reset password" });
+  }
+};
+
+exports.finalResetPassword = async (req, res, next) => {
+  const { email, newPassword } = req.body;
+  try {
+    // Find the user with the provided email
+    const user = await User.findOne({ email });
+
+  
+    // Bcrypt the new password
+    bcrypt.hash(newPassword, 10, async (err, hashedPassword) => {
+      if (err) {
+        console.error("Error hashing password:", err);
+        return res.status(500).json({ error: "Error hashing password" });
+      }
+
+      // Update the user's password with the hashed password
+      user.password = hashedPassword;
+      user.verificationToken = null; // Clear the verification token
+      await user.save();
+
+      // Password updated successfully
+      return res.status(200).json({ message: "Password Updated" });
+    });
+  } catch (error) {
+    console.error("Error updating password:", error);
+    return res.status(500).json({ error: "Error updating password" });
+  }
+};

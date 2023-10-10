@@ -27,5 +27,8 @@ router.get("/getVideo", adminController.getVideo);
 router.post("/DeleteVideo", adminController.DeleteVideo);
 router.post("/userCODOrder", adminController.userCODOrder);
 router.post("/getAllOrders", adminController.getAllOrders);
+router.get("/getOrders", adminController.getOrders);
+router.post("/dispatchOrder", adminController.dispatchOrder);
+
 
 module.exports = router;

@@ -14,6 +14,10 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    isDispatched: {
+      type: Boolean,
+      default: false,
+    },
     products: [
       {
         type: mongoose.Schema.Types.ObjectId,

@@ -21,7 +21,9 @@ router.post(
 router.post("/verify", authController.verifyEmail);
 router.post("/getUser", authController.getUser);
 router.post("/saveGoogleUser", authController.saveGoogleUser);
-
+router.post("/resetPassword", authController.resetPassword);
+router.post("/validateResetPassword", authController.validateResetPassword);
+router.post("/finalResetPassword", authController.finalResetPassword);
 
 // router.post("/verifyToken", authController.verifyToken);
 
