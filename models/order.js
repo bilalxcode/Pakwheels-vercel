@@ -18,6 +18,10 @@ const orderSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isPaid: {
+      type: Boolean,
+      default: false,
+    },
     products: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -31,4 +35,4 @@ const orderSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("Order", orderSchema); // Change the model name to singular "Order"
+module.exports = mongoose.model("Order", orderSchema);

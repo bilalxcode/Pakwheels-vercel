@@ -29,6 +29,8 @@ router.post("/userCODOrder", adminController.userCODOrder);
 router.post("/getAllOrders", adminController.getAllOrders);
 router.get("/getOrders", adminController.getOrders);
 router.post("/dispatchOrder", adminController.dispatchOrder);
+router.post("/userStripeOrder", adminController.userStripeOrder);
+router.post("/updateStripeOrder", adminController.updateStripeOrder);
 
 
 module.exports = router;

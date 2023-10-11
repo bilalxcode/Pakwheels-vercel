@@ -9,7 +9,9 @@ const jwt = require("jsonwebtoken");
 const jwtKey = "wheels_pak";
 const Video = require("../models/videos");
 const multer = require("multer");
-
+const STRIPE_SECRET_KEY =
+  "sk_test_51Nk18qCVtk9qc81A5lKBuslEdlf1hquSfQmmFAQBhpJOMhF0b6Ahm87touepu5iOCDuKlKvwxWDEEuxT3ra5ceYv00egr52yl4";
+const stripe = require("stripe")(STRIPE_SECRET_KEY);
 exports.adminLogin = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -495,9 +497,9 @@ exports.userCODOrder = async (req, res, next) => {
     // Create a new order document
     const newOrder = new Order({
       user: user,
-      products: products, // Use the "products" field
       address: address,
       phoneNumber: phoneNumber,
+      products: products,
     });
 
     // Save the order to the database
@@ -552,6 +554,85 @@ exports.dispatchOrder = async (req, res, next) => {
     }
 
     res.status(200).json({ message: "Order Dispatched", order: updatedOrder });
+  } catch (error) {
+    console.error("Error dispatching order:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+exports.userStripeOrder = async (req, res, next) => {
+  const { amount, id, user, orders, phoneNumber, address } = req.body;
+  console.log("amount", amount);
+  console.log("id", id);
+  console.log("user", user);
+  console.log("orders", orders);
+  console.log("phoneNumber", phoneNumber);
+  console.log("address", address);
+
+  try {
+    const payment = await stripe.paymentIntents.create({
+      amount,
+      currency: "USD",
+      description: "Pakwheels Autostore Purchase",
+      payment_method: id,
+      confirm: true,
+      payment_method_types: ["card"], // Make sure this includes valid payment methods
+      return_url: "http://localhost:3000/checkout", // Replace with your desired return URL
+    });
+    console.log("payment", payment);
+    const newOrder = new Order({
+      user,
+      products: orders,
+      phoneNumber, // Include phoneNumber
+      address, // Include address
+      isPaid: true,
+    });
+
+    console.log("object created with", phoneNumber, address);
+
+    // Save the order to the database
+    const savedOrder = await newOrder.save();
+
+    res.json({
+      message: "Payment successful",
+      success: true,
+      savedOrder: savedOrder,
+    });
+  } catch (error) {
+    console.log("Error", error);
+    res.json({
+      message: "Payment Failed",
+      success: false,
+    });
+  }
+};
+exports.updateStripeOrder = async (req, res, next) => {
+  const order = req.body.order;
+  const phoneNumber = req.body.phoneNumber;
+  const address = req.body.address;
+  const orderId = order[0]._id;
+  console.log(order, phoneNumber, address, orderId);
+  try {
+    // Find the order by ID and update the phoneNumber, address, and set isPaid to true
+    const updatedOrder = await Order.findByIdAndUpdate(
+      orderId,
+      {
+        phoneNumber: phoneNumber,
+        address: address,
+        isPaid: true, // Set isPaid to true
+      },
+      { new: true } // This option returns the updated document
+    );
+
+    if (!updatedOrder) {
+      console.log("not found order");
+
+      return res.status(404).json({ message: "Order not found" });
+    }
+    console.log("found order");
+
+    res.status(200).json({ message: "Order Dispatched", order: updatedOrder });
+    console.log(updatedOrder);
   } catch (error) {
     console.error("Error dispatching order:", error);
     res.status(500).json({ error: "Internal server error" });
