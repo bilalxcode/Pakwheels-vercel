@@ -1,13 +1,15 @@
+//imports
 const User = require("../models/user");
+
+//controllers
 exports.updateProfile = async (req, res) => {
   try {
-    const userId = req.body.userId; // Get the user's ID from the request body
+    const userId = req.body.userId;
     const updatedPhoneNumber = req.body.updatedPhoneNumber;
     const updatedName = req.body.updatedName;
     const updatedCity = req.body.updatedCity;
     const selectedGenderValue = req.body.selectedGenderValue;
 
-    // Find the user by ID and update their data
     const user = await User.findByIdAndUpdate(
       userId,
       {

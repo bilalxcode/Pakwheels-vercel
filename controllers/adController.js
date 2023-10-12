@@ -1,15 +1,14 @@
+//imports
 const User = require("../models/user");
 const Car = require("../models/car");
 const Bike = require("../models/bike");
-
 const multer = require("multer");
 
+//Controllers
 exports.postCarAd = (req, res, next) => {
   const formData = req.body.formData;
   const selectedFeatures = req.body.selectedFeatures;
-  console.log(formData, selectedFeatures);
   const userId = req.body.userId;
-  console.log(userId);
   const newCar = new Car({
     city: formData.city,
     modelYear: formData.modelYear,
@@ -42,6 +41,7 @@ exports.postCarAd = (req, res, next) => {
     });
 };
 
+//multer
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "./uploads");
@@ -51,8 +51,10 @@ const storage = multer.diskStorage({
     cb(null, uniqueSuffix + "-" + file.originalname);
   },
 });
-
 const upload = multer({ storage: storage });
+
+// controllers
+
 exports.addCarImage = async (req, res, next) => {
   try {
     upload.array("images[]", 5)(req, res, async (err) => {
@@ -61,16 +63,12 @@ exports.addCarImage = async (req, res, next) => {
         return res.status(500).json({ error: "Error uploading images" });
       }
 
-      console.log("Images uploaded successfully");
-
       // Extract car data from the formData
       const car = JSON.parse(req.body.car);
       const carId = car._id; // Assuming the car object has an _id field
-      console.log("Car ID:", carId);
 
       // Get an array of image URLs or references from req.files
       const imageUrls = req.files.map((file) => file.path);
-      console.log("Image URLs:", imageUrls);
 
       // Update the car document with the new image URLs
       try {
@@ -81,11 +79,9 @@ exports.addCarImage = async (req, res, next) => {
         );
 
         if (!updatedCar) {
-          console.log("Image not added to the car");
           return res.status(404).json({ error: "Car not found" });
         }
 
-        console.log("Updated Car:", updatedCar);
         return res.status(200).json({ message: "Image Uploaded Successfully" });
       } catch (updateError) {
         console.error("Error updating car:", updateError);
@@ -97,26 +93,21 @@ exports.addCarImage = async (req, res, next) => {
     res.status(500).json({ error: "Error handling image upload" });
   }
 };
+
 exports.addCarContact = async (req, res, next) => {
   try {
     const phoneNumber = req.body.phoneNumber;
     const car = req.body.car;
     const carId = car._id;
 
-    console.log("phone:", phoneNumber);
-    console.log("carId:", carId);
-
-    // Find the car by its ID
     const carToUpdate = await Car.findById(carId);
 
     if (!carToUpdate) {
       return res.status(404).json({ message: "Car not found" });
     }
 
-    // Update the sellerContact field
     carToUpdate.sellerContact = phoneNumber;
 
-    // Save the updated car object
     await carToUpdate.save();
 
     res.status(200).json({ message: "Contact updated successfully" });
@@ -148,7 +139,6 @@ exports.postBikeAd = (req, res, next) => {
   newBike
     .save()
     .then((bike) => {
-      console.log("New Bike added successfully without approval ");
       return res.status(200).json({
         message: "New Bike added successfully without approval",
         bike: bike,
@@ -168,18 +158,11 @@ exports.addBikeImage = async (req, res, next) => {
         return res.status(500).json({ error: "Error uploading images" });
       }
 
-      console.log("Images uploaded successfully");
-
-      // Extract car data from the formData
       const bike = JSON.parse(req.body.bike);
-      const bikeId = bike._id; // Assuming the car object has an _id field
-      console.log("Car ID:", bikeId);
+      const bikeId = bike._id;
 
-      // Get an array of image URLs or references from req.files
       const imageUrls = req.files.map((file) => file.path);
-      console.log("Image URLs:", imageUrls);
 
-      // Update the car document with the new image URLs
       try {
         const updatedBike = await Bike.findByIdAndUpdate(
           bikeId,
@@ -192,7 +175,6 @@ exports.addBikeImage = async (req, res, next) => {
           return res.status(404).json({ error: "bike not found" });
         }
 
-        console.log("Updated bike:", updatedBike);
         return res.status(200).json({ message: "Image Uploaded Successfully" });
       } catch (updateError) {
         console.error("Error updating bike:", updateError);
@@ -211,20 +193,14 @@ exports.addBikeContact = async (req, res, next) => {
     const bike = req.body.bike;
     const bikeId = bike._id;
 
-    console.log("phone:", phoneNumber);
-    console.log("bikeId:", bikeId);
-
-    // Find the car by its ID
     const bikeToUpdate = await Bike.findById(bikeId);
 
     if (!bikeToUpdate) {
       return res.status(404).json({ message: "Bike not found" });
     }
 
-    // Update the sellerContact field
     bikeToUpdate.sellerContact = phoneNumber;
 
-    // Save the updated car object
     await bikeToUpdate.save();
 
     res.status(200).json({ message: "Bike Contact updated successfully" });
@@ -237,18 +213,15 @@ exports.addBikeContact = async (req, res, next) => {
 exports.getAllAds = async (req, res, next) => {
   try {
     const user = req.body.user;
-    const userId = user._id; // Assuming you receive the user's ID in the request body
+    const userId = user._id;
     const userFound = await User.findById(userId);
 
     if (!userFound) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Query the database to find ads posted by this user
     const ads = await Car.find({ seller: userId });
     const bikeAds = await Bike.find({ seller: userId });
-
-    console.log(ads);
 
     res.status(200).json({ message: "success", ads, bikeAds });
   } catch (error) {

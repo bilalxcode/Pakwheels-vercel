@@ -1,3 +1,4 @@
+//imports
 const User = require("../models/user");
 const Car = require("../models/car");
 const Bike = require("../models/bike");
@@ -5,13 +6,16 @@ const Order = require("../models/order");
 const Product = require("../models/product");
 const Category = require("../models/category");
 const jwt = require("jsonwebtoken");
-
-const jwtKey = "wheels_pak";
 const Video = require("../models/videos");
 const multer = require("multer");
+
+//keys
+const jwtKey = "wheels_pak";
 const STRIPE_SECRET_KEY =
   "sk_test_51Nk18qCVtk9qc81A5lKBuslEdlf1hquSfQmmFAQBhpJOMhF0b6Ahm87touepu5iOCDuKlKvwxWDEEuxT3ra5ceYv00egr52yl4";
 const stripe = require("stripe")(STRIPE_SECRET_KEY);
+
+//controllers
 exports.adminLogin = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -41,11 +45,11 @@ exports.getEveryAd = async (req, res, next) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 exports.BanUser = async (req, res, next) => {
   try {
     const userId = req.body.userId;
 
-    // Find the user by their ID and update the isBanned property to true
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { isBanned: true },
@@ -53,11 +57,9 @@ exports.BanUser = async (req, res, next) => {
     );
 
     if (!updatedUser) {
-      // If the user with the given ID is not found, return an error
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Respond with a success message
     res
       .status(200)
       .json({ message: "User banned successfully", user: updatedUser });
@@ -71,7 +73,6 @@ exports.UnBanUser = async (req, res, next) => {
   try {
     const userId = req.body.userId;
 
-    // Find the user by their ID and update the isBanned property to true
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { isBanned: false },
@@ -79,11 +80,9 @@ exports.UnBanUser = async (req, res, next) => {
     );
 
     if (!updatedUser) {
-      // If the user with the given ID is not found, return an error
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Respond with a success message
     res
       .status(200)
       .json({ message: "User Unbanned successfully", user: updatedUser });
@@ -97,7 +96,6 @@ exports.ApproveAd = async (req, res, next) => {
   try {
     const carId = req.body.carId;
 
-    // Find the car by ID and update the isApproved property to true
     const updatedCar = await Car.findByIdAndUpdate(
       carId,
       { isApproved: true },
@@ -121,7 +119,6 @@ exports.ApproveBikeAd = async (req, res, next) => {
   try {
     const bikeId = req.body.bikeId;
 
-    // Find the car by ID and update the isApproved property to true
     const updatedBike = await Bike.findByIdAndUpdate(
       bikeId,
       { isApproved: true },
@@ -191,7 +188,6 @@ exports.DeleteAd = async (req, res, next) => {
   const carId = req.body.carId;
 
   try {
-    // Find the car document by carId and remove it from the database
     const deletedCar = await Car.findByIdAndRemove(carId);
 
     if (!deletedCar) {
@@ -209,7 +205,6 @@ exports.DeleteBikeAd = async (req, res, next) => {
   const bikeId = req.body.bikeId;
 
   try {
-    // Find the car document by carId and remove it from the database
     const deletedBike = await Bike.findByIdAndRemove(bikeId);
 
     if (!deletedBike) {
@@ -225,7 +220,6 @@ exports.DeleteBikeAd = async (req, res, next) => {
 
 exports.getCategory = async (req, res, next) => {
   try {
-    console.log("category sent");
     const categories = await Category.find();
 
     res.status(200).json({ categories });
@@ -247,13 +241,8 @@ exports.getProducts = async (req, res, next) => {
 exports.AddNewCategory = async (req, res, next) => {
   try {
     const newCategoryName = req.body.newCategoryName;
-
-    console.log("Received new category name:", newCategoryName);
-
-    // Create a new category instance
     const newCategory = new Category({ name: newCategoryName });
 
-    // Save the new category to the database
     await newCategory.save();
     res.status(200).json({ message: "Category added successfully" });
   } catch (error) {
@@ -262,57 +251,7 @@ exports.AddNewCategory = async (req, res, next) => {
   }
 };
 
-// const multer = require("multer");
-
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cb(null, "uploads/"); // Specify the directory where uploaded files will be stored
-//   },
-//   filename: (req, file, cb) => {
-//     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-//     cb(
-//       null,
-//       file.fieldname +
-//         "-" +
-//         uniqueSuffix +
-//         "." +
-//         file.originalname.split(".").pop()
-//     );
-//   },
-// });
-
-// const upload = multer({ storage: storage });
-
-// exports.AdProduct = async (req, res, next) => {
-//   try {
-//     const { title, category, price, quantity, description } = req.body;
-
-//     if (!req.files) {
-//       return res.status(400).json({ message: "No files uploaded" });
-//     }
-
-//     const images = req.files.map((file) => file.path);
-
-//     // Create a new product instance
-//     const newProduct = new Product({
-//       title,
-//       category,
-//       price,
-//       quantity,
-//       description,
-//       images,
-//     });
-
-//     // Save the new product to the database
-//     await newProduct.save();
-
-//     res.status(200).json({ message: "Product added successfully" });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "Internal Server Error" });
-//   }
-// };
-
+//multer
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "./uploads");
@@ -324,6 +263,8 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
+
+//controllers
 exports.addProduct = async (req, res, next) => {
   try {
     upload.array("images[]", 5)(req, res, async (err) => {
@@ -331,8 +272,6 @@ exports.addProduct = async (req, res, next) => {
         console.error("Error uploading images:", err);
         return res.status(500).json({ error: "Error uploading images" });
       }
-
-      console.log("Images uploaded successfully");
 
       try {
         const { title, category, price, quantity, description } = req.body;
@@ -343,7 +282,6 @@ exports.addProduct = async (req, res, next) => {
 
         const images = req.files.map((file) => file.path);
 
-        // Find the category ObjectId by name
         const foundCategory = await Category.findOne({ name: category });
 
         if (!foundCategory) {
@@ -352,7 +290,7 @@ exports.addProduct = async (req, res, next) => {
 
         const newProduct = new Product({
           name: title,
-          category: foundCategory._id, // Use the ObjectId of the found category
+          category: foundCategory._id,
           price,
           quantity,
           description,
@@ -374,26 +312,22 @@ exports.addProduct = async (req, res, next) => {
 };
 
 exports.editProduct = async (req, res, next) => {
-  const productId = req.body.productId; // Get the product ID from the request body
+  const productId = req.body.productId;
   console.log(productId);
   try {
-    // Find the product by ID
     const product = await Product.findById(productId);
 
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Update the product fields with values from the request body
     product.name = req.body.name;
     product.price = req.body.price;
     product.quantity = req.body.quantity;
     product.description = req.body.description;
 
-    // Save the updated product
     const updatedProduct = await product.save();
 
-    console.log("product updated ");
     res.status(200).json({
       message: "Product updated successfully",
       product: updatedProduct,
@@ -410,7 +344,6 @@ exports.deleteProduct = async (req, res, next) => {
   const productId = req.body.productId;
 
   try {
-    // Find the car document by carId and remove it from the database
     const deletedProduct = await Product.findByIdAndRemove(productId);
 
     if (!deletedProduct) {
@@ -424,30 +357,13 @@ exports.deleteProduct = async (req, res, next) => {
   }
 };
 
-// exports.AddVideo = async (req, res, next) => {
-//   try {
-//     const link = req.body.videoUrl;
-
-//     const newVideo = new Video({
-//       link: link,
-//     });
-
-//     await newVideo.save();
-
-//     res.status(200).json({ message: "Video added successfully" });
-//     console.log("Video uploaded successfully");
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "Internal Server Error" });
-//   }
-// };
 exports.AddVideo = async (req, res, next) => {
   try {
     const fullURL = req.body.videoUrl;
-    const videoID = fullURL.split("v=")[1]; // Extract the video ID
+    const videoID = fullURL.split("v=")[1];
 
     const newVideo = new Video({
-      link: videoID, // Store the video ID instead of the full URL
+      link: videoID,
     });
 
     await newVideo.save();
@@ -472,7 +388,6 @@ exports.getVideo = async (req, res, next) => {
 exports.DeleteVideo = async (req, res, next) => {
   try {
     const videoId = req.body.videoId;
-    console.log(videoId);
 
     const result = await Video.deleteOne({ _id: videoId });
 
@@ -491,10 +406,8 @@ exports.DeleteVideo = async (req, res, next) => {
 
 exports.userCODOrder = async (req, res, next) => {
   try {
-    // Extract order details from the request
     const { user, products, address, phoneNumber } = req.body;
 
-    // Create a new order document
     const newOrder = new Order({
       user: user,
       address: address,
@@ -502,15 +415,12 @@ exports.userCODOrder = async (req, res, next) => {
       products: products,
     });
 
-    // Save the order to the database
     const savedOrder = await newOrder.save();
 
-    // Return a success response
     res
       .status(201)
       .json({ message: "Order placed successfully", order: savedOrder });
   } catch (error) {
-    // Handle errors and return an error response
     console.error("Error placing COD order:", error);
     res.status(500).json({ error: "Internal server error" });
   }
@@ -540,13 +450,12 @@ exports.getOrders = async (req, res, next) => {
   }
 };
 exports.dispatchOrder = async (req, res, next) => {
-  const orderId = req.body.orderId; // Assuming you send the order ID in the request body
+  const orderId = req.body.orderId;
   try {
-    // Find the order by ID and update the isDispatched property
     const updatedOrder = await Order.findByIdAndUpdate(
       orderId,
       { isDispatched: true },
-      { new: true } // This option returns the updated document
+      { new: true }
     );
 
     if (!updatedOrder) {
@@ -562,12 +471,6 @@ exports.dispatchOrder = async (req, res, next) => {
 
 exports.userStripeOrder = async (req, res, next) => {
   const { amount, id, user, orders, phoneNumber, address } = req.body;
-  console.log("amount", amount);
-  console.log("id", id);
-  console.log("user", user);
-  console.log("orders", orders);
-  console.log("phoneNumber", phoneNumber);
-  console.log("address", address);
 
   try {
     const payment = await stripe.paymentIntents.create({
@@ -576,21 +479,17 @@ exports.userStripeOrder = async (req, res, next) => {
       description: "Pakwheels Autostore Purchase",
       payment_method: id,
       confirm: true,
-      payment_method_types: ["card"], // Make sure this includes valid payment methods
-      return_url: "http://localhost:3000/checkout", // Replace with your desired return URL
+      payment_method_types: ["card"],
+      return_url: "http://localhost:3000/checkout",
     });
-    console.log("payment", payment);
     const newOrder = new Order({
       user,
       products: orders,
-      phoneNumber, // Include phoneNumber
-      address, // Include address
+      phoneNumber,
+      address,
       isPaid: true,
     });
 
-    console.log("object created with", phoneNumber, address);
-
-    // Save the order to the database
     const savedOrder = await newOrder.save();
 
     res.json({
@@ -606,30 +505,26 @@ exports.userStripeOrder = async (req, res, next) => {
     });
   }
 };
+
 exports.updateStripeOrder = async (req, res, next) => {
   const order = req.body.order;
   const phoneNumber = req.body.phoneNumber;
   const address = req.body.address;
   const orderId = order[0]._id;
-  console.log(order, phoneNumber, address, orderId);
   try {
-    // Find the order by ID and update the phoneNumber, address, and set isPaid to true
     const updatedOrder = await Order.findByIdAndUpdate(
       orderId,
       {
         phoneNumber: phoneNumber,
         address: address,
-        isPaid: true, // Set isPaid to true
+        isPaid: true,
       },
-      { new: true } // This option returns the updated document
+      { new: true }
     );
 
     if (!updatedOrder) {
-      console.log("not found order");
-
       return res.status(404).json({ message: "Order not found" });
     }
-    console.log("found order");
 
     res.status(200).json({ message: "Order Dispatched", order: updatedOrder });
     console.log(updatedOrder);

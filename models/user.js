@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema(
     password: String,
     isVerified: {
       type: Boolean,
-      default: false, // Initially, users are not verified
+      default: false,
     },
     verificationToken: String,
     phoneNumber: {

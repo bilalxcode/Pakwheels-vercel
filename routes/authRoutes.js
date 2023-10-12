@@ -1,10 +1,12 @@
+//imports
 const express = require("express");
-
+const authController = require("../controllers/authController");
 const router = express.Router();
+
+//router
 router.use(express.json());
 
-const authController = require("../controllers/authController");
-
+//routes
 router.post(
   "/sign-up",
   authController.isNewUser,
@@ -12,19 +14,21 @@ router.post(
   authController.sendEmailVerification,
   authController.SignUp
 );
-router.post("/sign-out", authController.SignOut);
+router.post("/verify", authController.verifyEmail);
+
 router.post(
   "/logIn",
   authController.checkEmailAndPassword,
   authController.LogIn
 );
-router.post("/verify", authController.verifyEmail);
-router.post("/getUser", authController.getUser);
 router.post("/saveGoogleUser", authController.saveGoogleUser);
+
+router.post("/getUser", authController.getUser);
+
 router.post("/resetPassword", authController.resetPassword);
 router.post("/validateResetPassword", authController.validateResetPassword);
 router.post("/finalResetPassword", authController.finalResetPassword);
 
-// router.post("/verifyToken", authController.verifyToken);
+router.post("/sign-out", authController.SignOut);
 
 module.exports = router;

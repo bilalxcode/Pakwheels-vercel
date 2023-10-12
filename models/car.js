@@ -69,8 +69,7 @@ const carSchema = new mongoose.Schema(
     },
     images: [
       {
-        type: String, // You can use String to store image URLs
-        // If you want to store references to image documents, you can use mongoose.Schema.Types.ObjectId
+        type: String,
       },
     ],
   },
