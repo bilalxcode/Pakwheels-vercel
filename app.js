@@ -21,6 +21,12 @@ const adminRoutes = require("./routes/adminRoutes");
 app.use(express.json()); // Add this line to parse JSON data
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+app.use(express.static(path.resolve(__dirname, "frontend", "Pakwheels-clone-frontend", "build")));
+
+app.get("/", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "frontend", "Pakwheels-clone-frontend", "build", "index.html"));
+});
+  
 mongoose
   .connect(
     "mongodb+srv://supremebilal78:t5OxJKSK26h9q9YU@test-db.v6p1fbj.mongodb.net/Pakwheels",
